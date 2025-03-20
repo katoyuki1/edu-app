@@ -3,11 +3,12 @@ title: "FletとLlamaIndexで簡単なAIアシスタントを作ってみる" # �
 emoji: "😸" # アイキャッチとして使われる絵文字（1文字だけ）
 type: "tech" # tech: 技術記事 / idea: アイデア記事
 topics: ["Flet", "LlamaIndex"] # タグ。["markdown", "rust", "aws"]のように指定する
-published: false # 公開設定（falseにすると下書き）
+published: true # 公開設定（falseにすると下書き）
 ---
 ## 目的
 - **ベクトル検索**や**RAG（Retrieval-Augmented Generation）の基本概念を理解する**    
-- **サンプルアプリ制作を通して、FletとLlamaIndexを体験する**
+- **以下のようなサンプルアプリ制作を通して、FletとLlamaIndexを体験する**
+![](https://storage.googleapis.com/zenn-user-upload/e9f7c592c433-20250320.png)
 
 ## 対象読者
 - *ベクトル検索*や**RAG**をざっくり理解したい。
@@ -17,7 +18,6 @@ published: false # 公開設定（falseにすると下書き）
 ## 開発環境
 - OS：**macOS(Apple M1)**
 
----
 
 ## この記事でどんなものを作るのか？
 この記事では、**FletとLlamaIndexを活用した簡単なAIアシスタント**を作成します。
@@ -31,19 +31,16 @@ Ollamaを使って適切な回答を生成します。
 - ユーザー：「tanakaの職業は？」
 - AI：「tanakaの職業はシステムエンジニアです。」
 
----
 
 
 ## Fletとは？
 [Flet](https://flet.dev/) は、Pythonで**簡単にGUIアプリを作成できるフレームワーク** です。
 
-- **HTMLやJavaScript不要！** PythonだけでGUIを作れる
+- PythonだけでGUIを作れ、**HTMLやJavaScriptが不要** 
 - **Flutterベース**なので、クロスプラットフォームで動作（Windows, macOS, Linux）
-- **シンプルなAPI設計**で、直感的にアプリ開発ができる
 
 今回のアプリでは、Fletを使って**ユーザーが質問を入力し、AIの回答を表示するインターフェース**を作成します。
 
----
 
 ## LlamaIndexとは？
 [LlamaIndex](https://gpt-index.readthedocs.io/en/latest/) は、**データを検索し、生成AIと統合するためのライブラリ** です。
@@ -52,8 +49,7 @@ Ollamaを使って適切な回答を生成します。
 - **ベクトル検索を簡単に実装可能**（SQLite, Qdrant, Weaviateなどと連携）
 - **OpenAI, Ollama, Hugging Face など様々なLLMを利用できる**
 
-今回のアプリでは、LlamaIndexを使用して**SQLiteのデータを検索し、OllamaのLLMを用いて回答を生成**します。
-
+今回のアプリでは、LlamaIndexを使用して**SQLiteのデータを検索し、ローカルで動作するOllamaのLLMを用いて回答を生成**します。
 
 
 ## ベクトル検索、RAGとは？
@@ -93,37 +89,25 @@ Ollamaを使って適切な回答を生成します。
 曖昧な指示で柔軟な検索をすることができます。
 
 
-⸻
 
 ### 2. RAG（Retrieval-Augmented Generation）とは
 
 RAG（リトリーバル・オーグメンテッド・ジェネレーション）は、すでに大量のデータで学習済みのAI（LLM）に、追加の情報を与えることで、ベクトル検索の精度を向上させる仕組みです。
 
+#### なぜRAGを使うのか？
 
-(個人や企業などの、公になってないデータなど)
+LLMは学習データにない情報には正確な回答ができません。
+例えば「営業部の田中さんの月の給料は？」みたいな企業の内部情報などは回答できないか、間違った内容をあたかも正しい情報のように解答してしまいます。
 
-例：
 
-質問：「パンダは何を食べますか？」
-	1.	「パンダ」「食べ物」をベクトルに変換
-	2.	ベクトル検索で「パンダは竹を食べる」という知識を取得
-	3.	「パンダは主に竹を食べます」とAIが回答
+RAGを使えば、企業のデータベースの情報をもとに、LLMで「田中さんは月収30万円です」
+のように回答を生成することができます。
 
-⸻
 
-3. まとめ
-	•	ベクトル検索 → データをベクトルに変換して「似ているデータ」を検索
-	•	RAG → ベクトル検索で知識を取得し、AIが文章生成
 
-ベクトル検索とRAGを組み合わせることで、より正確で詳しい回答が可能になります。
+今回のアプリでは、SQLiteを使って情報を検索し、Ollamaを使って回答を生成するRAGを実装します。
 
-### **なぜRAGを使うのか？**
-- LLMは**学習データにない情報には回答できない** → **RAGなら最新データを活用可能！**
-- 長文プロンプトを入れるとコストがかかる → **RAGなら検索して必要な情報だけ渡せる！**
 
-今回のアプリでは、**SQLiteを使って情報を検索し、Ollamaを使って回答を生成するRAGを実装**します。
-
----
 ## Ollamaとは？
 
 Ollama は、ローカル環境で LLM（大規模言語モデル）を実行できるツールです。
@@ -132,115 +116,36 @@ Ollama は、ローカル環境で LLM（大規模言語モデル）を実行で
 
 - ローカル実行可能
 
-    OpenAI APIのようにインターネット接続が必要ないため、オフラインでも動作可能。
+    OpenAI APIのようにインターネット接続が必要ないため、オフラインでも動作可能です
 
-    モデルやデータがローカル環境に保存されるため、セキュリティが高い。
-
-- 高速な応答速度
-
-    モデルをローカルで稼働させるため、API通信の待機時間がなく、高速に応答可能。
-
-    GPU が利用できる場合はさらにパフォーマンスが向上。
 
 - コスト削減
-OpenAI API などのクラウドベースのLLMサービスは利用量に応じて課金が発生しますが、Ollama は無料で利用可能。
 
-    一度モデルをダウンロードすれば、ローカルで無制限に利用可能。
+    OpenAI API などのクラウドベースのLLMサービスは、利用量に応じて課金が発生しますが、Ollama は無料で利用可能です
+
+    一度モデルをダウンロードすれば、ローカルで無制限に利用できます。
+
 
 - さまざまなモデルに対応
 
     llama3, mistralなどの様々なモデルに対応。
 
-
-### なぜOllamaを使用したのか？
-
-- コスト削減 → OpenAI の API 利用には料金が発生するが、Ollama なら無料
-
-
-モデルの選択肢が豊富 → Mistral や Llama など、タスクに応じてモデルを選択可能
-
 今回のアプリでは、Ollama の mistral モデルを使用しています。
 
 
-## RAGとは？
-
-RAG（Retrieval-Augmented Generation） とは、
-データベースなどの外部情報を検索し、その情報をもとにLLM（大規模言語モデル）が回答を生成する仕組み です。
-
-### RAGの仕組み
-
-検索（Retrieval）: データベースやベクトルストアから関連情報を取得
-
-生成（Generation）: 検索結果をもとに、生成AI（LLM）が回答を作成
-
-### なぜRAGを使うのか？
-
-LLMは学習データにない情報には回答できなません。
-例えば「営業部の田中さんの月の給料は？」みたいな企業の内部情報など。
-
-RAGを使えば、企業のデータベースの情報をもとに、LLMで「田中さんは月収30万円です」
-のように回答を生成できませう。
-
-
-
-
-今回のアプリでは、SQLiteを使って情報を検索し、Ollamaを使って回答を生成するRAGを実装します。
-
-## サンプルアプリ 簡易AI-Assistant の作成手順
-
-1. プロジェクトフォルダを作成
-
-mkdir ai_assistant
-cd ai_assistant
-
-2. 仮想環境を作成し、有効化
-
-python -m venv venv
-source venv/bin/activate  # macOS/Linux の場合
-venv\Scripts\activate  # Windows の場合
-
-3. 必要なライブラリをインストール
-
-pip install flet llama-index ollama python-dotenv
-
-4. データベースの作成 (initialize_db.py)
-
-(省略)
-
-5. AIアシスタントの検索 (rag.py)
-
-(省略)
-
-6. Flet で UI を作成 (app.py)
-
-(省略)
-
-7. アプリを実行
-
-python app.py
-
-まとめ
-
-FletとLlamaIndexを活用して、簡単なRAGシステムを実装しました。
-
-SQLiteのデータを検索し、生成AIで回答を生成
-
-Fletを使ってシンプルなUIを実装
-
-RAGの基本を学びながら、FletとLlamaIndexの活用方法も体験できるサンプルとなっています。
-
-参考文献
-
-Flet公式ドキュメント
-
-LlamaIndex公式ドキュメント
-
-Ollama公式サイト
-
-
-
-
 ## サンプルアプリ **簡易AI-Assistant** の作成手順
+最終的なディレクトリ構成は以下のようになります。
+app.py、initialize_db.py、rag.pyの３つのファイルを作成します。
+```
+ollama_assistant
+├── app.py
+├── data
+│   ├── data.db
+│   └── initialize_db.py
+└── models
+    └── rag.py
+```
+
 
 ### **1. プロジェクトフォルダを作成**
 ```bash
@@ -265,7 +170,7 @@ pip install flet llama-index ollama python-dotenv llama-index-llms-ollama llama-
 
 
 
-### **4. データベースの作成 (`ollama_assistant/data/initialize_db.py`)**
+### **4. テーブルの作成 (`ollama_assistant/data/initialize_db.py`)**
 ホームディレクトリにて、
 dataフォルダを作成します。
 さらにその配下にinitialize_db.pyというファイルを作成します。
@@ -274,14 +179,24 @@ mkdir data
 touch data/initialize_db.py
 ```
 initialize_db.pyに以下のコードを記載します。
-```python
-import sqlite3
+コメントで１行ずつ解説しています
 
-# SQLiteデータベースを作成
+（実際の開発では、行ずつコメントを書くことはありませんが、初心者向けの解説用コードとして、以下のように記載しています。）
+```python:initialize_db.py
+import sqlite3  # sqlite3: PythonでSQLiteという軽量なデータベースを操作するためのモジュールを読み込む
+
+# SQLiteデータベースを作成または接続（存在しなければファイルが作成される）
 conn = sqlite3.connect("data/data.db")
+# データベースに対してSQL操作を実行するためのカーソル（操作の窓口）を作成する
 cursor = conn.cursor()
 
-# データテーブルを作成
+
+"""
+# データテーブルを作成するSQL文を実行
+# IF NOT EXISTS: テーブルがなければ作成する
+# id: 自動で1ずつ増加する一意な番号（PRIMARY KEY: 主キー）
+# text: 文章を格納するテキスト型のカラム
+"""
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS documents (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -289,18 +204,22 @@ CREATE TABLE IF NOT EXISTS documents (
 )
 """)
 
-# サンプルデータを追加
+# サンプルデータを追加するためのリストを作成
 documents = [
-    "suzukiの年齢は50歳です",
-    "tanakaの職業はシステムエンジニアです"
+    "suzukiの年齢は50歳です",  
+    "tanakaの職業はシステムエンジニアです" 
 ]
 
+# サンプルデータを1件ずつテーブルに挿入する
 for doc in documents:
-    cursor.execute("INSERT INTO documents (text) VALUES (?)", (doc,))
+    cursor.execute("INSERT INTO documents (text) VALUES (?)", (doc,))  # プレースホルダー「?」で安全にデータを挿入
 
+# データベースへの変更を保存する（commit: 変更を確定する操作）
 conn.commit()
+# データベースとの接続を閉じる
 conn.close()
 
+# データベースの初期化が完了したことを知らせるメッセージを表示
 print("データベースの初期化が完了しました！")
 ```
 
@@ -321,146 +240,171 @@ touch models/rag.py 
 ```
 
 rag.py  に以下のコードを記載します。
-``` python:
-import os
-import sqlite3
-from llama_index.core import VectorStoreIndex, Settings
-from llama_index.llms.ollama import Ollama
-from llama_index.embeddings.ollama import OllamaEmbedding  # ← Embedding も Ollama に変更
-from llama_index.core.schema import Document
-import ollama
+```python:
+import sqlite3  # sqlite3: 軽量なデータベースSQLiteを操作するためのモジュール
+from llama_index.core import VectorStoreIndex, Settings  # VectorStoreIndex: 検索可能なインデックスを作成するクラス, Settings: 設定管理用クラス
+from llama_index.llms.ollama import Ollama  # Ollama: ローカルの大規模言語モデル（LLM）を操作するためのクラス
+from llama_index.embeddings.ollama import OllamaEmbedding  # OllamaEmbedding: テキストを数値（埋め込みベクトル）に変換するクラス
+from llama_index.core.schema import Document  # Document: テキストデータを保持するオブジェクトを定義するクラス
+import ollama  # ollama: Ollama APIを使ってチャット機能を実行するモジュール
 
 # Ollamaの設定（ローカルモデルを使用）
-llm = Ollama(model="mistral")  # LLM を Ollama に設定
-embed_model = OllamaEmbedding(model_name="mistral")
+llm = Ollama(model="mistral")  # mistralという名前のローカルモデルを使ってLLMのインスタンスを作成
+embed_model = OllamaEmbedding(model_name="mistral")  # mistralモデルを使ってテキストの埋め込み変換用インスタンスを作成
 
-# LlamaIndex のデフォルト設定を Ollama に切り替え
-Settings.llm = llm
-Settings.embed_model = embed_model  # OpenAI の Embedding を使わない
+# LlamaIndex のデフォルト設定を Ollama に切り替える
+Settings.llm = llm  # LlamaIndexのLLM設定を上で作成したOllamaのインスタンスに変更
+Settings.embed_model = embed_model  # 埋め込みモデル設定をOllamaEmbeddingに変更（OpenAIのEmbeddingではなく）
 
-# SQLiteデータを取得
+# SQLiteデータを取得する関数を定義
 def fetch_data():
-    conn = sqlite3.connect("data/data.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT text FROM documents")
-    docs = [row[0] for row in cursor.fetchall()]
-    conn.close()
+    conn = sqlite3.connect("data/data.db")  # 指定したパスのSQLiteデータベースに接続（なければ新規作成）
+    cursor = conn.cursor()  # データベース操作を行うためのカーソル（命令窓口）を作成
+    cursor.execute("SELECT text FROM documents")  # SQL文でdocumentsテーブルからtextカラムの全データを取得する
+    docs = [row[0] for row in cursor.fetchall()]  # 取得した全行からテキスト（最初の列）だけをリストにまとめる
+    conn.close()  # データベース接続を終了する
     
-    print("📌 データ取得確認:", docs)  # デバッグ用のログ
-    return docs
+    print("📌 データ取得確認:", docs)  # デバッグ用: 取得したデータ内容をコンソールに表示
+    return docs  # 取得したテキストデータのリストを返す
 
-# データをLlamaIndexに登録（Documentオブジェクトに変換）
-documents = [Document(text=doc) for doc in fetch_data()]
-print("📌 LlamaIndex に取り込むデータ:", [doc.text for doc in documents])  # デバッグ用
+# 取得したデータをDocumentオブジェクトに変換し、LlamaIndexに登録する準備
+documents = [Document(text=doc) for doc in fetch_data()]  # 各テキストをDocumentクラスのインスタンスに変換する
+print("📌 LlamaIndex に取り込むデータ:", [doc.text for doc in documents])  # デバッグ用: Documentオブジェクト内のテキストを表示
 
-index = VectorStoreIndex.from_documents(documents)
+# Documentオブジェクトから検索可能なインデックスを作成する
+index = VectorStoreIndex.from_documents(documents)  # VectorStoreIndex: ドキュメントをベクトル（数値表現）に変換し、検索可能なインデックスを作成
 
-# 検索関数（RAG処理）
+# 検索関数
 def search_query(query):
-    query_engine = index.as_query_engine(similarity_top_k=3)  # 類似度検索の上位3件を取得
-    retrieved_docs = query_engine.query(query)  # 関連情報を取得
+    query_engine = index.as_query_engine(similarity_top_k=3)  # 入力クエリと最も類似した上位3件のドキュメントを取得する検索エンジンを設定
+    retrieved_docs = query_engine.query(query)  # クエリを実行して関連情報（ドキュメント）を取得する
 
-    print("📌 検索結果:", retrieved_docs)  # デバッグ用ログ
+    print("📌 検索結果:", retrieved_docs)  # デバッグ用: 検索で取得した結果を表示
 
-    # Ollama を使って最終的な回答を生成
+    # Ollamaチャット機能を使って、取得した情報をもとに最終的な回答を生成する
     response = ollama.chat(
-        model="mistral",
+        model="mistral",  # 使用するモデルの名前を指定
         messages=[
-            {"role": "system", "content": "あなたは役立つアシスタントです。"},
+            {"role": "system", "content": "あなたは役立つアシスタントです。"},  # システムメッセージ: AIの振る舞いを指示する
             {"role": "user", "content": f"以下の情報を参考にして質問に答えてください:\n\n{retrieved_docs}\n\n質問: {query}"}
+            # ユーザーメッセージ: 検索結果とユーザーの質問をAIに渡して回答を求める
         ]
     )
-    return response["message"]["content"]
+    return response["message"]["content"]  # AIが生成した回答の本文を返す
 ```
 
 
 ### **6. Flet で UI を作成 (`app.py`)**
 ホームディレクトリにapp.pyを作成し、以下のコードを記載します。
-```
-import flet as ft
-from models.rag import search_query
+```python:app.py
+# fletというUIライブラリをftという名前で読み込む
+import flet as ft  # PythonでGUI（グラフィカル・ユーザー・インターフェース）を作成するためのライブラリ
 
+# models/ragモジュールからsearch_query関数を読み込む
+from models.rag import search_query  #「RAG（検索と生成AIを組み合わせた手法）」を使って回答を生成する関数
+
+# main関数を定義する。引数pageはFletが生成するページ（画面）を表すオブジェクト
 def main(page: ft.Page):
+    # ページのタイトルを「AIアシスタント」に設定（ウィンドウ上部に表示される）
     page.title = "AIアシスタント"
+    # ページのスクロール方法を「adaptive」（状況に合わせて自動調整される）に設定
     page.scroll = "adaptive"
 
+    # チャットメッセージを縦方向に並べるためのレイアウト（Column）を作成
     chat = ft.Column()
 
+    # ユーザーがメッセージを送信したときに実行される関数を定義する
     def send_message(e):
+        # 入力ボックスからユーザーが入力したテキストを取得する
         user_input = input_box.value
+        # もし入力が空文字（何も入力されていない場合）なら何もしないで関数を終了する
         if not user_input:
             return
         
-        # ユーザーメッセージを表示
+        # ユーザーが入力したメッセージを画面に表示する
+        # ft.Textはテキストを表示するウィジェット。f-stringで変数user_inputの値を埋め込んでいる
         chat.controls.append(ft.Text(f"👤: {user_input}", size=16))
+        # ページの表示を更新して、新しいテキストが反映されるようにする
         page.update()
 
-        # RAGで検索 + 生成AIで回答
+        # search_query関数を呼び出し、RAGで回答を取得する
         response = search_query(user_input)
         
-        # AIの回答を表示
-        chat.controls.append(ft.Text(f"🤖: {response}", size=16, color="blue"))  
+        # AIが生成した回答を画面に表示する
+        # テキストの色を"blue"に設定して区別している
+        chat.controls.append(ft.Text(f"🤖: {response}", size=16, color="blue"))
+        # 表示を更新して新しいメッセージを反映する
         page.update()
 
-        # 入力ボックスをクリア
+        # 入力ボックスの内容をクリアして、次の入力に備える
         input_box.value = ""
+        # 再度ページを更新して、クリアされた状態を反映する
         page.update()
 
-    # UIレイアウト
+    # ユーザーインターフェース（UI）のレイアウト設定
+
+    # ユーザーが質問を入力するためのテキストフィールドを作成する
+    # labelは入力欄の上に表示される説明、widthは入力欄の幅を指定
     input_box = ft.TextField(label="質問を入力", width=500)
+    # 送信ボタンを作成。ボタンがクリックされたときにsend_message関数を実行する
     send_button = ft.ElevatedButton("送信", on_click=send_message)
 
+    # ページにチャット部分と、入力欄と送信ボタンを横並び（Row）にして追加する
     page.add(chat, ft.Row([input_box, send_button]))
 
+# Fletのアプリケーションを起動し、main関数をエントリーポイント(プログラムが実行を開始する最初の処理場所)として指定する
 ft.app(target=main)
 
 ```
 
 
 ### **7. ollamaを起動　&　アプリを実行**
+ターミナルで新たに新たにコンソール画面を開き、
+アプリのホームディレクトリに移動。
 以下のコマンドでollamaを起動します
 ```
+source venv/bin/activate
 ollama serve
 ```
 ![スクリーンショット 2025-03-08 22.29.07.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/2640031/d71af94f-f093-4f74-85de-fb1d1b3f8c5c.png)
 
 
-別のコンソール画面を開き、
+アプリ作成時に使っていたコンソール画面に戻り
 ホームディレクトリでapp.pytを実行すると
 以下のログが出力され、アプリが起動します。
 ```bash
 python app.py
 ```
-![スクリーンショット 2025-03-08 22.14.10.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/2640031/25ffe434-7a26-4e50-aa9b-67ac693d4ec1.png)            
+![スクリーンショット 2025-03-08 22.14.10.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/2640031/25ffe434-7a26-4e50-aa9b-67ac693d4ec1.png)        
+
 
 ![スクリーンショット 2025-03-08 22.14.45.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/2640031/ca416dac-80c7-423d-a99f-941dc0b53381.png)  
+
 initialize_db.pyで登録した
 suzukiとtanakaについて入力し「送信」を押下、しばらく待つと、DBに登録した情報を検索することができます。
 
-![スクリーンショット 2025-03-08 22.17.35.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/2640031/c5f0c241-665f-4b90-b30c-6ba77e4a7249.png)
-ただollamaはあまり賢くないのか、検索の精度は低いです。
-「tanakaの職業は？」で回答へ得られないのに、
-「tanaka」だけの質問で職業システムエンジニアと取得されます。
-加えて余計な文章も含まれるという。。
+ただ、質問の仕方によっては「情報が提供されていません」となります。
+この辺はプロンプトを修正したり別のモデルに変更する必要がありそうです。
 
-ollamaは無料かつローカルのみで使えますが
+![スクリーンショット 2025-03-08 22.17.35.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/2640031/c5f0c241-665f-4b90-b30c-6ba77e4a7249.png)
 
 
 
 ---
 
 ## **まとめ**
-- RAGとは、
-- **SQLiteのデータを検索し、生成AIで回答を生成**
-- **Fletを使ってシンプルなUIを実装**
-- 
+- RAGとは、LLMに追加情報を与えて、検索精度を向上させる仕組み
+- **Fletを使ってPythonのみでシンプルなGUIを実装できた**
+- **LlamaIndexでRAGシステムを実装できた**
+
+
 今回はRAGってどんな仕組み？をサンプルアプリを通して解説してみました。
 ollamaが商用利用には適しませんが、
-OpenAIのようにアカウント作ることなく無料で使えるので、ローカルで生成AIアプリを動かして遊分には良いと思います。
+OpenAIのようにアカウント作ることなく無料で使えるので、ローカルで生成AIアプリを動かして遊ぶには良いと思います。
 
 興味があったらぜひ上記コード動かしてみてください。
 
-次は商用でも使えるAzule Open AIとかで遊んでみたいと思います。
+次は商用でも使えるAzule Open AIとなどでも遊んでみたいと思います。
 
 
 ---
@@ -468,9 +412,3 @@ OpenAIのようにアカウント作ることなく無料で使えるので、�
 ## **参考文献**
 - [Flet公式ドキュメント](https://flet.dev/)
 - [LlamaIndex公式ドキュメント](https://gpt-index.readthedocs.io/)
-
-
-## 用語整理
-- AIモデル
-    - AIの種類。人間でも医者Aや医者B、エンジニアCとエンジニアDなど、職業や人によって能力はことまります。AIモデルもllama3, gpt4oなど、モデルによって性能や得意なことがが異なる
-- 
