@@ -1,0 +1,14 @@
+title: "【個人開発者向け】UI/UX入門"
+summary: "個人開発でアプリを作り収益化を図りたいが、人が使いたくなるようなUIを作れない。そんな悩みを抱えたエンジニアが、週末の短時間でUI/UXを学べる本となります。"
+topics: ["UI/UX", "個人開発", "CSS", "Figma"]
+published: false
+price: 0 # 有料の場合200〜5000
+# 本に含めるチャプターを順番に並べましょう
+chapters:
+  - example1
+  - example2
+  - example3
+  - example4
+  - example5
+  - example6
+  - example7
